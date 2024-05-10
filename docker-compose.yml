@@ -1,0 +1,48 @@
+version: '3.9'
+
+services:
+
+  nginx:
+    container_name: c-nginx
+    image: nginx:alpine
+    ports:
+      - "8181:80"
+    volumes:
+      - ./src:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    depends_on:
+      - app
+      - db
+
+  db:
+    container_name: c-database
+    image: mysql:latest
+    restart: always
+    ports:
+      - 3309:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_USER: mysql
+      MYSQL_DATABASE: main_app
+      MYSQL_PASSWORD: password
+
+  app:
+    container_name: c-app
+    build: 
+      context: ./php
+      dockerfile: Dockerfile
+    volumes:
+      - ./src:/var/www
+      - ./php/php.ini:/usr/local/etc/php/php.ini
+    ports:
+      - "9001:9000"
+    working_dir: /var/www
+
+  phpmyadmin:
+    container_name: c-phpmyadmin
+    image: phpmyadmin:latest
+    restart: always
+    ports:
+      - 8889:80
+    depends_on:
+      - db
